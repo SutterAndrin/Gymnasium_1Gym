@@ -124,6 +124,7 @@
       <button class="tab on" data-view="quiz">Quiz</button>
       <button class="tab" data-view="live">Live-Karte swisstopo</button>
       <button class="tab" data-view="werk">Werkstatt: Massstab &amp; Generalisierung</button>
+      <button class="tab" data-view="lk">Landeskarten LK10–LK1000</button>
     </div>
   </div>
 </header>
@@ -321,6 +322,50 @@
             <div><button class="btn sec" id="w6copy">Als Text kopieren</button> <button class="btn sec" id="w6clear">Alle löschen</button></div>
           </div>
           <div id="w6list" class="muted">Noch keine Funde. Wähle oben eine Massnahme und klicke in die Karte.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- LANDESKARTEN -->
+  <section id="view-lk" class="hidden">
+    <div class="card">
+      <h2 style="margin-top:0">Landeskarten LK10 bis LK1000 für das Arbeitsblatt</h2>
+      <p class="muted" style="margin-top:0">Hier wählst du selbst, welche Landeskarte von swisstopo angezeigt wird, egal wie weit du zoomst. So kannst du die Aufgaben auch ohne Papierkarten lösen.</p>
+      <div class="subnav">
+        <button class="sub lksub on" data-lk="einzel"><b>A</b> Eine Landeskarte</button>
+        <button class="sub lksub" data-lk="vergleich"><b>B</b> Landeskarten vergleichen</button>
+      </div>
+
+      <div id="lk-einzel">
+        <div class="maptools" id="lkbtns"></div>
+        <div class="challenge">
+          <div><span class="muted">Angezeigt</span><div class="target" id="lkname">LK25</div></div>
+          <div><span class="muted">Massstab am Bildschirm ≈</span><div class="target" id="lkscale" style="color:var(--ink)">–</div></div>
+          <button class="btn" id="lknative">In Originalgrösse zeigen</button>
+          <div class="w1fb" id="lkhint" style="font-size:14px;color:var(--ink-soft)"></div>
+        </div>
+        <div class="wmap" id="lkmap"></div>
+        <div class="qbox"><b>Passend zum Arbeitsblatt:</b>
+          <ol>
+            <li><b>Aufgabe 4a:</b> Schalte von LK25 bis LK500 durch. Wofür würdest du welche Karte brauchen? Trage die «typische Verwendung» ein.</li>
+            <li><b>Aufgabe 6:</b> Klicke bei LK25, LK50 und LK100 jeweils auf «In Originalgrösse zeigen». Wie verändert sich das Gebiet, das auf dem Bildschirm Platz hat?</li>
+            <li><b>Aufgabe 7d:</b> Zoome in den Alpstein und vergleiche LK25, LK50 und LK100: In welchem Abstand sind die Höhenkurven beschriftet? Daraus kannst du die Äquidistanz ablesen.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div id="lk-vergleich" class="hidden">
+        <p>Beide Karten zeigen denselben Ort im <b>gleichen Bildschirm-Massstab</b> und bewegen sich zusammen. Wähle links und rechts eine Landeskarte und vergleiche die Generalisierung.</p>
+        <div class="duo">
+          <div><div class="maptools" id="lkvA"></div><div class="wmap half" id="lkmapA"></div></div>
+          <div><div class="maptools" id="lkvB"></div><div class="wmap half" id="lkmapB"></div></div>
+        </div>
+        <div class="qbox"><b>Passend zu Aufgabe 7:</b>
+          <ol>
+            <li>Vergleiche LK25 und LK100 in Appenzell: Was ist mit den einzelnen Häusern passiert?</li>
+            <li>Wie breit ist die Hauptstrasse auf der LK100 im Vergleich zur LK25? Welche Massnahme ist das?</li>
+            <li>Welche Namen und Wege fehlen auf der LK100? Trage deine Beispiele in die Tabelle von Aufgabe 7c ein.</li>
+          </ol>
         </div>
       </div>
     </div>
@@ -576,9 +621,10 @@ document.querySelectorAll(".round").forEach(b => b.addEventListener("click", () 
 let map = null;
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
-  ["quiz", "live", "werk"].forEach(v => $("#view-" + v).classList.toggle("hidden", t.dataset.view !== v));
+  ["quiz", "live", "werk", "lk"].forEach(v => $("#view-" + v).classList.toggle("hidden", t.dataset.view !== v));
+  if(t.dataset.view === "lk"){ const v = document.querySelector(".lksub.on").dataset.lk; v === "vergleich" ? lkCompare() : lkShow(); }
   if(t.dataset.view === "live") initMap();
-  if(t.dataset.view === "werk") showW(document.querySelector(".sub.on").dataset.w);
+  if(t.dataset.view === "werk") showW(document.querySelector(".sub[data-w].on").dataset.w);
 }));
 
 // ---------- Live-Karte (swisstopo WMTS) ----------
@@ -690,13 +736,13 @@ function mk(id, opts){
 }
 const WINIT = {};
 function showW(w){
-  document.querySelectorAll(".sub").forEach(b => b.classList.toggle("on", b.dataset.w === w));
+  document.querySelectorAll(".sub[data-w]").forEach(b => b.classList.toggle("on", b.dataset.w === w));
   document.querySelectorAll(".wpanel").forEach(p => p.classList.toggle("hidden", p.id !== w));
   if(!WINIT[w]){ WINIT[w] = true; ({w1:initW1, w2:initW2, w3:initW3, w4:initW4, w5:initW5, w6:initW6})[w](); }
   else Object.values(WMAPS[w] || {}).forEach(m => m && m.invalidateSize());
 }
 const WMAPS = {};
-document.querySelectorAll(".sub").forEach(b => b.addEventListener("click", () => showW(b.dataset.w)));
+document.querySelectorAll(".sub[data-w]").forEach(b => b.addEventListener("click", () => showW(b.dataset.w)));
 
 // ---------- W1: Massstab einstellen ----------
 const W1T = [25000, 100000, 10000, 50000, 500000, 200000];
@@ -888,13 +934,90 @@ document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", 
   initMap(); const p = PLACES[b.dataset.go]; if(map) map.setView([p[0], p[1]], p[2]);
 }));
 
+// =====================================================================
+// LANDESKARTEN LK10 – LK1000
+// =====================================================================
+const LK = [
+  {k:"LK10",   s:10000,   layer:"ch.swisstopo.landeskarte-farbe-10",          fmt:"png"},
+  {k:"LK25",   s:25000,   layer:"ch.swisstopo.pixelkarte-farbe-pk25.noscale",   fmt:"jpeg"},
+  {k:"LK50",   s:50000,   layer:"ch.swisstopo.pixelkarte-farbe-pk50.noscale",   fmt:"jpeg"},
+  {k:"LK100",  s:100000,  layer:"ch.swisstopo.pixelkarte-farbe-pk100.noscale",  fmt:"jpeg"},
+  {k:"LK200",  s:200000,  layer:"ch.swisstopo.pixelkarte-farbe-pk200.noscale",  fmt:"jpeg"},
+  {k:"LK500",  s:500000,  layer:"ch.swisstopo.pixelkarte-farbe-pk500.noscale",  fmt:"jpeg"},
+  {k:"LK1000", s:1000000, layer:"ch.swisstopo.pixelkarte-farbe-pk1000.noscale", fmt:"jpeg"}
+];
+function lkLayer(o){
+  return L.tileLayer("https://wmts.geo.admin.ch/1.0.0/" + o.layer + "/default/current/3857/{z}/{x}/{y}." + o.fmt,
+    {maxNativeZoom:o.k === "LK10" ? 19 : 18, maxZoom:19, attribution:ATTR + " · " + o.k});
+}
+function nativeZoom(m, s){ return Math.log2(156543.03392 * Math.cos(m.getCenter().lat * Math.PI / 180) * 96 / 0.0254 / s); }
+function lkButtons(boxId, cur, onPick){
+  const box = document.getElementById(boxId); box.innerHTML = "";
+  LK.forEach(o => {
+    const b = document.createElement("button"); b.className = "btn sec" + (o.k === cur ? " on" : ""); b.textContent = o.k;
+    b.addEventListener("click", () => { box.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); onPick(o); });
+    box.appendChild(b);
+  });
+}
+let lkm = null, lkl = null, lkcur = LK[1], lkInit = false, lkA = null, lkB = null, lkLA = null, lkLB = null, lkSync = false;
+function lkShow(){
+  if(lkInit) { [lkm, lkA, lkB].forEach(m => m && m.invalidateSize()); return; }
+  lkInit = true;
+  lkm = mk("lkmap"); if(!lkm) return;
+  lkm.setView(HOME, 14);
+  L.control.scale({metric:true, imperial:false, maxWidth:200}).addTo(lkm);
+  const pick = o => {
+    lkcur = o; if(lkl) lkm.removeLayer(lkl);
+    let err = 0; lkl = lkLayer(o).addTo(lkm);
+    lkl.on("tileerror", () => { if(++err === 4) $("#lkhint").textContent = "Diese Karte lädt gerade nicht. Versuche eine andere Landeskarte."; });
+    lkl.on("tileload", () => { err = 0; });
+    $("#lkname").textContent = o.k; $("#lkhint").textContent = "";
+  };
+  lkButtons("lkbtns", "LK25", pick); pick(LK[1]);
+  const upd = () => {
+    $("#lkscale").textContent = nice(scaleAt(lkm));
+    const f = scaleAt(lkm) / lkcur.s;
+    $("#lkhint").textContent = f > 1.15 ? "Die " + lkcur.k + " ist gerade " + f.toFixed(1) + "-mal verkleinert." :
+                               f < 0.87 ? "Die " + lkcur.k + " ist gerade " + (1 / f).toFixed(1) + "-mal vergrössert (Lupe): Es kommen keine neuen Details dazu!" :
+                               "Die " + lkcur.k + " ist ungefähr in Originalgrösse zu sehen.";
+  };
+  lkm.on("zoomend moveend", upd); upd();
+  $("#lknative").addEventListener("click", () => lkm.setZoom(nativeZoom(lkm, lkcur.s), {animate:true}));
+  lkm.options.zoomSnap = 0.1;
+}
+function lkCompare(){
+  if(lkA) { lkA.invalidateSize(); lkB.invalidateSize(); return; }
+  lkA = mk("lkmapA", {zoomSnap:0.25}); lkB = mk("lkmapB", {zoomSnap:0.25, zoomControl:false}); if(!lkA || !lkB) return;
+  lkA.setView(HOME, 15); lkB.setView(HOME, 15);
+  L.control.scale({metric:true, imperial:false}).addTo(lkA);
+  const setA = o => { if(lkLA) lkA.removeLayer(lkLA); lkLA = lkLayer(o).addTo(lkA); };
+  const setB = o => { if(lkLB) lkB.removeLayer(lkLB); lkLB = lkLayer(o).addTo(lkB); };
+  lkButtons("lkvA", "LK25", setA); lkButtons("lkvB", "LK100", setB);
+  setA(LK[1]); setB(LK[3]);
+  const sync = (src, dst) => src.on("move zoomend", () => {
+    if(lkSync) return; lkSync = true; dst.setView(src.getCenter(), src.getZoom(), {animate:false}); lkSync = false;
+  });
+  sync(lkA, lkB); sync(lkB, lkA);
+}
+document.querySelectorAll(".lksub").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".lksub").forEach(x => x.classList.toggle("on", x === b));
+  const v = b.dataset.lk === "vergleich";
+  $("#lk-einzel").classList.toggle("hidden", v); $("#lk-vergleich").classList.toggle("hidden", !v);
+  if(v) lkCompare(); else lkShow();
+}));
+
 // ---------- Direktlinks (z. B. …/#w2 aus dem Arbeitsblatt) ----------
 function route(){
   const h = (location.hash || "").slice(1);
   const tab = v => document.querySelector('.tab[data-view="' + v + '"]').click();
   if(h === "live") tab("live");
-  else if(/^w[1-6]$/.test(h)){ document.querySelectorAll(".sub").forEach(b => b.classList.toggle("on", b.dataset.w === h)); tab("werk"); }
+  else if(/^w[1-6]$/.test(h)){ document.querySelectorAll(".sub[data-w]").forEach(b => b.classList.toggle("on", b.dataset.w === h)); tab("werk"); }
   else if(h === "quiz") tab("quiz");
+  else if(h === "lk" || h === "vergleich"){
+    document.querySelectorAll(".lksub").forEach(b => b.classList.toggle("on", b.dataset.lk === (h === "vergleich" ? "vergleich" : "einzel")));
+    $("#lk-einzel").classList.toggle("hidden", h === "vergleich"); $("#lk-vergleich").classList.toggle("hidden", h !== "vergleich");
+    tab("lk");
+  }
 }
 window.addEventListener("hashchange", route);
 route();
