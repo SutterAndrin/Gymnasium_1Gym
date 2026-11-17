@@ -105,6 +105,7 @@
   .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px}
   .lnk{border:0;background:none;color:#1F5FBF;cursor:pointer;font:inherit;font-size:14px;text-decoration:underline;padding:0 4px}
   #w6note{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px}
+  .qmap{height:56vh;min-height:360px;border-radius:8px;border:1px solid var(--line)}
   details{margin-top:4px} summary{cursor:pointer;color:var(--ink-soft)}
   .hidden{display:none}
   footer{font-size:13px;color:var(--ink-soft);padding:0 0 30px}
@@ -132,11 +133,12 @@
   <section id="view-quiz">
     <div id="start" class="card">
       <h2 style="margin-top:0">Wähle eine Runde</h2>
-      <p class="muted">Die Kartenausschnitte stammen aus den Landeskarten von swisstopo (Appenzell und Alpstein). Der rote Kreis zeigt jeweils, worum es geht.</p>
+      <p class="muted">Alle Karten stammen von swisstopo. In Runde 1 und 2 sind es Kartenausschnitte aus Appenzell und dem Alpstein, in Runde 3 arbeitest du direkt auf der echten Landeskarte.</p>
       <div class="rounds">
         <button class="round" data-round="lesen"><b>Runde 1: Karten lesen</b><span class="muted">Signaturen «übersetzen»: Was bedeutet das Zeichen?</span></button>
         <button class="round" data-round="massstab"><b>Runde 2: Massstab und Generalisierung</b><span class="muted">Rechnen, vergleichen, Generalisierung erkennen</span></button>
-        <button class="round" data-round="alle"><b>Alle Fragen</b><span class="muted">Beide Runden gemischt</span></button>
+        <button class="round" data-round="live"><b>Runde 3: Auf der Live-Karte</b><span class="muted">Finden, ablesen und messen auf der echten swisstopo-Karte (braucht Internet)</span></button>
+        <button class="round" data-round="alle"><b>Alle Fragen</b><span class="muted">Alle drei Runden gemischt</span></button>
       </div>
     </div>
 
@@ -404,6 +406,35 @@ const QUESTIONS = [
   {round:"massstab", tag:"Generalisierung", q:"Welche Generalisierungsmassnahme zeigt die Skizze (vom grossen zum kleinen Massstab)?",
    media:{seq:3}, a:["Vergrössern","Weglassen","Vereinfachen","Ergänzen"],
    ex:"Die Strasse wird breiter gezeichnet als massstäblich, damit sie lesbar bleibt."},
+  // ---------- Runde 3: Auf der Live-Karte ----------
+  {round:"live", tag:"Live-Karte", live:"find", q:"Finde den Seealpsee und klicke darauf.", center:[47.278, 9.385], zoom:13,
+   target:[47.2694, 9.3989], tol:450, sol:"Seealpsee",
+   ex:"Seen sind blaue Flächen. Der Seealpsee liegt im Tal unterhalb der Ebenalp."},
+  {round:"live", tag:"Live-Karte", live:"find", q:"Klicke auf den Gipfel des Säntis, den höchsten Berg im Alpstein.", center:[47.262, 9.375], zoom:13,
+   target:[47.24944, 9.34333], tol:350, sol:"Säntisgipfel",
+   ex:"Gipfel erkennst du am Höhenpunkt mit der grössten Zahl und an den Höhenkurven, die sich eng um den Gipfel legen."},
+  {round:"live", tag:"Live-Karte", live:"find", q:"Klicke auf den Gipfel des Hohen Kastens.", center:[47.292, 9.455], zoom:13,
+   target:[47.2836, 9.4867], tol:400, sol:"Hoher Kasten",
+   ex:"Der Hohe Kasten liegt am Ostrand des Alpsteins, direkt über dem Rheintal."},
+  {round:"live", tag:"Live-Karte", live:"mc", q:"Was ist an der markierten Stelle zu sehen?", center:[47.2694, 9.3989], zoom:15,
+   a:["Ein See","Ein Gletscher","Ein Sumpf","Ein Fluss"],
+   ex:"Stehende Gewässer sind blaue Flächen mit einer dunkleren Uferlinie. Das ist der Seealpsee."},
+  {round:"live", tag:"Live-Karte", live:"mc", q:"Lies den Höhenpunkt auf dem markierten Gipfel ab. Wie hoch ist der Säntis?", center:[47.24944, 9.34333], zoom:15,
+   a:["2502 m ü. M.","2436 m ü. M.","1794 m ü. M.","3502 m ü. M."],
+   ex:"Der Säntis ist mit 2502 m der höchste Gipfel des Alpsteins."},
+  {round:"live", tag:"Live-Karte", live:"mc", q:"Wie hoch ist der markierte Gipfel, der Hohe Kasten? Lies auf der Karte ab.", center:[47.2836, 9.4867], zoom:15,
+   a:["Etwa 1790 m ü. M.","Etwa 2500 m ü. M.","Etwa 1190 m ü. M.","Etwa 790 m ü. M."],
+   ex:"Der Hohe Kasten ist knapp 1800 m hoch. Die Höhe steht als Zahl beim Höhenpunkt auf dem Gipfel."},
+  {round:"live", tag:"Live-Karte · Massstab", live:"dist", q:"Wie weit ist es in der Luftlinie von A (Seealpsee) nach B (Säntis)? Benutze den Massstabsbalken unten links.",
+   pts:[[47.2694, 9.3989], [47.24944, 9.34333]],
+   ex:"Mit dem Massstabsbalken misst du die Strecke: Wie oft passt der Balken zwischen A und B?"},
+  {round:"live", tag:"Live-Karte · Massstab", live:"dist", q:"Wie weit ist es in der Luftlinie von A (Appenzell) nach B (Hoher Kasten)? Benutze den Massstabsbalken.",
+   pts:[[47.3310, 9.4090], [47.2836, 9.4867]],
+   ex:"Die Luftlinie ist immer kürzer als der Weg, den man wirklich gehen muss."},
+  {round:"live", tag:"Live-Karte · Generalisierung", live:"mc", q:"Zoome in dieser Karte langsam hinein, bis in Appenzell plötzlich einzelne Häuser erscheinen. Welche Generalisierungsmassnahme hatte die Häuser vorher betroffen?",
+   center:[47.3310, 9.4090], zoom:12, free:true,
+   a:["Zusammenfassen","Vergrössern","Ergänzen","Vereinfachen"],
+   ex:"Bei kleinem Massstab werden die vielen einzelnen Häuser zu einer Siedlungsfläche zusammengefasst. Beim Hineinzoomen springt die Karte auf eine weniger generalisierte Landeskarte."},
 ];
 
 // ---------- Quiz-Logik ----------
@@ -421,6 +452,7 @@ function startRound(r){
 }
 
 function media(q){
+  if(q.live) return '<div id="qmap" class="qmap"></div><p id="qmapnote" class="muted" style="font-size:14px;margin:6px 0 0"></p>';
   const m = q.media; if(!m) return "";
   if(m.trio){
     return '<div class="trio">' + ["A","B","C"].map(k =>
@@ -441,13 +473,66 @@ function show(){
   $("#bar").style.width = (idx / list.length * 100) + "%";
   $("#qtext").textContent = q.q;
   $("#qmedia").innerHTML = media(q);
-  const opts = shuffle(q.a.map((t,i)=>({t, right:i===0})));
-  $("#answers").innerHTML = opts.map((o,i)=>
-    '<button class="ans" data-right="'+o.right+'"><span class="key">'+"ABCD"[i]+'</span><span>'+o.t+'</span></button>').join("");
   $("#feedback").className = "feedback"; $("#feedback").innerHTML = "";
   $("#next").disabled = true;
   $("#next").textContent = idx === list.length-1 ? "Auswertung" : "Weiter";
+  if(q.live === "dist" || q.live === "find" || q.live === "mc"){ if(!liveMap(q)) return; }
+  if(q.live === "find"){ $("#answers").innerHTML = '<div class="muted">👆 Klicke in der Karte auf die richtige Stelle. Du darfst zoomen und verschieben.</div>'; return; }
+  const opts = shuffle(q.a.map((t,i)=>({t, right:i===0})));
+  $("#answers").innerHTML = opts.map((o,i)=>
+    '<button class="ans" data-right="'+o.right+'"><span class="key">'+"ABCD"[i]+'</span><span>'+o.t+'</span></button>').join("");
   document.querySelectorAll(".ans").forEach(b => b.addEventListener("click", () => choose(b, q)));
+}
+
+// ---------- Live-Karten im Quiz ----------
+let qmap = null;
+function km(m){ return m < 1000 ? Math.round(m / 10) * 10 + " m" : (m / 1000).toFixed(1) + " km"; }
+function liveMap(q){
+  if(qmap){ try { qmap.remove(); } catch(e){} qmap = null; }
+  if(typeof L === "undefined"){
+    $("#qmap").innerHTML = '<p style="padding:20px">Die Live-Karte konnte nicht geladen werden (keine Internetverbindung?). Diese Frage wird übersprungen.</p>';
+    $("#answers").innerHTML = ""; log.push({q:q.q, ok:false, sol:"(übersprungen, keine Karte)"}); $("#next").disabled = false; return false;
+  }
+  const still = q.live === "dist";
+  qmap = L.map("qmap", {minZoom:8, maxZoom:18, dragging:!still, scrollWheelZoom:!still, doubleClickZoom:false, touchZoom:!still, boxZoom:false, keyboard:!still, zoomControl:!still});
+  L.tileLayer("https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg",
+    {maxNativeZoom:18, maxZoom:18, attribution:'© <a href="https://www.swisstopo.admin.ch">swisstopo</a>'}).addTo(qmap);
+  L.control.scale({metric:true, imperial:false, maxWidth:200}).addTo(qmap);
+  if(q.live === "dist"){
+    qmap.fitBounds(L.latLngBounds(q.pts), {padding:[70, 70]});
+    q.pts.forEach((p, i) => L.marker(p, {icon:L.divIcon({className:"pin", html:"AB"[i], iconSize:[30,30], iconAnchor:[15,15]})}).addTo(qmap));
+    const dm = qmap.distance(q.pts[0], q.pts[1]);
+    const f = [1, 0.35, 2.5, 5].map(x => km(dm * x));
+    q.a = f; q._d = dm;
+    $("#qmapnote").textContent = "Zoomen und Verschieben sind hier gesperrt: Miss nur mit dem Massstabsbalken.";
+  } else {
+    qmap.setView(q.center, q.zoom);
+    if(q.live === "mc" && !q.free){
+      L.circleMarker(q.center, {radius:24, color:"#A61916", weight:4, fill:false}).addTo(qmap);
+      L.circleMarker(q.center, {radius:28, color:"#fff", weight:2, fill:false, opacity:.9}).addTo(qmap);
+      $("#qmapnote").textContent = "Du darfst zoomen und verschieben. Der rote Kreis markiert die gesuchte Stelle.";
+    }
+    if(q.free) $("#qmapnote").textContent = "Zoome mit + oder dem Mausrad hinein und beobachte, was mit den Häusern passiert.";
+    if(q.live === "find"){
+      $("#qmapnote").textContent = "";
+      let done = false;
+      qmap.on("click", e => {
+        if(done) return; done = true;
+        const d = qmap.distance(e.latlng, q.target), right = d <= q.tol;
+        L.circle(q.target, {radius:q.tol, color:"#2E7D4F", weight:2, fillOpacity:.12}).addTo(qmap);
+        L.circleMarker(q.target, {radius:6, color:"#2E7D4F", fillColor:"#2E7D4F", fillOpacity:1}).addTo(qmap);
+        L.circleMarker(e.latlng, {radius:7, color:"#A61916", fillColor:"#fff", fillOpacity:1, weight:3}).addTo(qmap);
+        if(!right) qmap.fitBounds(L.latLngBounds([e.latlng, q.target]), {padding:[60, 60], maxZoom:15});
+        if(right) points++;
+        log.push({q:q.q, ok:right, sol:q.sol});
+        $("#feedback").innerHTML = (right ? '<b class="ok">Richtig!</b> Dein Klick liegt ' + km(d) + " vom Ziel entfernt. "
+                                          : '<b class="no">Nicht ganz.</b> Dein Klick (rot) liegt ' + km(d) + ' vom Ziel entfernt. Der grüne Kreis zeigt, wo es ist. ') + q.ex;
+        $("#feedback").classList.add("show"); $("#next").disabled = false;
+        $("#answers").innerHTML = "";
+      });
+    }
+  }
+  return true;
 }
 
 function choose(btn, q){
@@ -788,6 +873,17 @@ $("#w6copy").addEventListener("click", async () => {
 document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => {
   initMap(); const p = PLACES[b.dataset.go]; if(map) map.setView([p[0], p[1]], p[2]);
 }));
+
+// ---------- Direktlinks (z. B. …/#w2 aus dem Arbeitsblatt) ----------
+function route(){
+  const h = (location.hash || "").slice(1);
+  const tab = v => document.querySelector('.tab[data-view="' + v + '"]').click();
+  if(h === "live") tab("live");
+  else if(/^w[1-6]$/.test(h)){ document.querySelectorAll(".sub").forEach(b => b.classList.toggle("on", b.dataset.w === h)); tab("werk"); }
+  else if(h === "quiz") tab("quiz");
+}
+window.addEventListener("hashchange", route);
+route();
 </script>
 </body>
 </html>
